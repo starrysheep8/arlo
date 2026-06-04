@@ -30,20 +30,31 @@ namespace Goldstone {
   typedef enum arloError {BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET} error_t;
   typedef enum busState {NO_BUS = -1, BUS_INPUT = 0, BUS_OUTPUT = 1, BUS_ERROR = -2} bus_t;
 
+  //registers & bits
   void setLsb(bool state);
   void setMsb(bool state);
   void flipLsb();
   void flipMsb();
   void shiftIn(byte bits);
   void clearRegister(bool latch = true);
-  bus_t getBusRequirement(periph_t peripheral);
-  bus_t getBusRequirements(byte peripheralBits);
-  
-  void addPeripherals(byte bits);
+
+  //utilities & actions
   void setPeripherals(byte bits);
+  void addPeripherals(byte bits);
   void unsetPeripherals(byte bits);
   void setError(arloError errorCode);
   void runBasicDiagnostic(periph_t peripheral);
+
+  bus_t getCurrentBusState();
+  bus_t getBusRequirement(periph_t peripheral);
+  bus_t getBusRequirements(byte peripheralBits);
+
+  //motor skills
+
+  //personality management
+
+
+  //==========================================================================================================
 
   void proto(uint8_t pinTX_plus, uint8_t pinTX_minus, uint8_t pwmRX_plus, uint8_t pwmRX_minus, uint8_t pwmSBU) {
     demulMsbPin = pinTX_minus;
@@ -77,9 +88,12 @@ namespace Goldstone {
     headServo.write(90);
     shoulderServo.write(0);
 
-    return;
     //temporary startup
+    delay(100);
+    setPeripherals(BODY);
+    busServo.write(90);
     delay(3500);
+    clearRegister();
     for (int i = 0; i < 100; i++) {
       byte currentPeriphs = 0;
 
@@ -140,29 +154,48 @@ namespace Goldstone {
     
   }
 
-  //============================== PERSONALITY & MODES ==============================
+  //============================== PERSONALITY MANAGEMENT ==============================
 
   //============================== MOTOR SKILLS ==============================
-
-  
+  // when switching between arm and body movement, there needs to be a small delay or else the servo set first gets confused
 
   //============================== UTILITIES & ACTIONS ==============================
 
-  void setPeripherals(byte bits) { //AHHHHHHH DO BUS STATE CHANGES FOR SPECIFIC PERIPHERALS
+  void setPeripherals(byte bits) {
     //validate & set bus
+    bool setOutputAfterLatch = false;
     bus_t desiredBus = getBusRequirements(bits);
+    if (bits == BODY) Serial.println(desiredBus);
     switch (desiredBus) {
-      case -2:break; //ahhhhh make a git repo
+      case BUS_ERROR:
+        setError(BUS_INPUT_OUTPUT_SET);
+        return;
+
+      case BUS_INPUT:
+        pinMode(busPin, INPUT);
+        break;
+
+      case BUS_OUTPUT:
+          pinMode(busPin, INPUT);
+          setOutputAfterLatch = true;
+        break;
+
+      case NO_BUS:
+        pinMode(busPin, INPUT);
+        break;
     }
-        
-    
-    
-      shiftIn(bits);
-      //set latch
-      flipMsb();
-      flipLsb();
-      latchBits = registerBits;
+
+    //set peripherals if bus was valid
+    shiftIn(bits);
+    //set latch
+    flipMsb();
+    flipLsb();
+    latchBits = registerBits;
+    if (setOutputAfterLatch) {
+      pinMode(busPin, OUTPUT);
+    }
   }  
+
   void addPeripherals(byte bits) {setPeripherals(bits | latchBits);}
   void unsetPeripherals(byte bits) {setPeripherals(~bits & latchBits);}
 
@@ -243,6 +276,7 @@ namespace Goldstone {
   }
 
   void clearRegister(bool latch) {
+    pinMode(busPin, INPUT);
     shiftIn(0);
     if (latch) {
       flipMsb();
