@@ -50,6 +50,7 @@ namespace Goldstone {
   bus_t getBusRequirements(byte peripheralBits);
 
   //motor skills
+  
 
   //personality management
 

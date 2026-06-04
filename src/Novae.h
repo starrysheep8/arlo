@@ -11,6 +11,9 @@ namespace cmb {
     int x, y;
   } V2I_t;
 
+  const float deg2rad = 0.01745329252;
+  const float rad2deg = 57.2957795131;
+
 }
 
 namespace Constelation {
