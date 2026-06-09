@@ -44,7 +44,7 @@ namespace Goldstone {
   bool getPeripheral(periph_t peripheral);
   void setPeripherals(byte bits);
   void addPeripherals(byte bits);
-  void unsetPeripherals(byte bits);
+  void removePeripherals(byte bits);
   void setError(arloError errorCode);
   void runDiagnostic(periph_t peripheral);
   kill_t getKillState(bool trySetKillPeripherial = false);
@@ -122,12 +122,12 @@ namespace Goldstone {
     delay(30);
     headServo.write(90);
     delay(250);
-    unsetPeripherals(BODY | LITE);
+    removePeripherals(BODY | LITE);
     delay(500);
     for (int i = 0; i < 100; i++) {
       shoulderServo.write((float)i / 100.0f * 170);
       if (i == 30 || i == 80) addPeripherals(BUZZ);
-      if (i == 40 || i == 90) unsetPeripherals(BUZZ);
+      if (i == 40 || i == 90) removePeripherals(BUZZ);
 
       if (i == 50) addPeripherals(ARM_L);
 
@@ -205,7 +205,7 @@ namespace Goldstone {
   }  
 
   void addPeripherals(byte bits) {setPeripherals(bits | latchBits);}
-  void unsetPeripherals(byte bits) {setPeripherals(~bits & latchBits);}
+  void removePeripherals(byte bits) {setPeripherals(~bits & latchBits);}
 
 
   void setError(arloError errorCode) {
@@ -215,6 +215,7 @@ namespace Goldstone {
   void runDiagnostic(diagnostic_t diagnosis) {
     setPeripherals(0);
     delay(1);
+
     switch (diagnosis) {
       case TRIG_ECHO:
         break;
@@ -223,9 +224,31 @@ namespace Goldstone {
         setPeripherals(KILL | LITE | LASER);
         const unsigned long timeoutSeconds = 8;
         unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
+        bool diagnosticResult = false;
+
         while (millis() < timeoutTimestamp) { //wait for sensor touch
-          
+          if (getKillState() == TOUCH) {
+            addPeripherals(BUZZ);
+            removePeripherals(LITE | LASER);
+            timeoutTimestamp = millis() + 1000 * timeoutSeconds;
+
+            while (millis() < timeoutTimestamp) { //wait for sensor touch to stop
+              if (getKillState() == NO_TOUCH) {
+                diagnosticResult = true;
+              }
+            }
+          }
         } 
+        
+        if (diagnosticResult == false) {
+          setError(NEGATIVE);
+        } else {
+          setPeripherals(LITE | LASER);
+          delay(50);
+          setPeripherals(0);
+          delay(50);
+          setError(POSITIVE);
+        }
         break;
       
       case LED:
