@@ -27,7 +27,9 @@ namespace Goldstone {
   bool currentBusState = INPUT;
 
   typedef enum arloPeripheral {ARM_L = 1, ECHO = 2, KILL = 4, BODY = 8, LITE = 16, LASR = 32, BUZZ = 64, TRIG = 128} periph_t;
-  typedef enum arloError {BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET} error_t;
+  typedef enum arloDiagnostic {SERVO_ARM_L = 1, TRIG_ECHO = 2, CAPACITIVE_SENSOR = 4, SERVO_BODY = 8, LED = 16, LASER = 32, BUZZER = 64, SERVO_ARM_U, SERVO_HEAD, SERVO_ALL, CALIBRATE_ARM_L, CALIBRATE_ARM_U, CALIBRATE_BODY, CALIBRATE_HEAD, CALIBRATE_ALL} diagnostic_t;
+  typedef enum arloError {NEGATIVE, POSITIVE, BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET} error_t;
+  typedef enum killState {NOT_SENSING, NO_TOUCH, TOUCH} kill_t;
   typedef enum busState {NO_BUS = -1, BUS_INPUT = 0, BUS_OUTPUT = 1, BUS_ERROR = -2} bus_t;
 
   //registers & bits
@@ -39,12 +41,14 @@ namespace Goldstone {
   void clearRegister(bool latch = true);
 
   //utilities & actions
+  bool getPeripheral(periph_t peripheral);
   void setPeripherals(byte bits);
   void addPeripherals(byte bits);
   void unsetPeripherals(byte bits);
   void setError(arloError errorCode);
-  void runBasicDiagnostic(periph_t peripheral);
-
+  void runDiagnostic(periph_t peripheral);
+  kill_t getKillState(bool trySetKillPeripherial = false);
+  
   bus_t getCurrentBusState();
   bus_t getBusRequirement(periph_t peripheral);
   bus_t getBusRequirements(byte peripheralBits);
@@ -161,6 +165,9 @@ namespace Goldstone {
   // when switching between arm and body movement, there needs to be a small delay or else the servo set first gets confused
 
   //============================== UTILITIES & ACTIONS ==============================
+  bool getPeripheral(periph_t peripheral) {
+    return latchBits & peripheral;
+  }
 
   void setPeripherals(byte bits) {
     //validate & set bus
@@ -205,8 +212,38 @@ namespace Goldstone {
 
   }
 
-  void runBasicDiagnostic(periph_t peripheral) {
-    
+  void runDiagnostic(diagnostic_t diagnosis) {
+    setPeripherals(0);
+    delay(1);
+    switch (diagnosis) {
+      case TRIG_ECHO:
+        break;
+
+      case CAPACITIVE_SENSOR:
+        setPeripherals(KILL | LITE | LASER);
+        const unsigned long timeoutSeconds = 8;
+        unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
+        while (millis() < timeoutTimestamp) { //wait for sensor touch
+          
+        } 
+        break;
+      
+      case LED:
+                
+        break;
+      
+      case LASER:
+        break;
+      
+      case BUZZER:
+        break;
+
+      case ARM_L:
+        
+      case BODY:
+      
+        break;
+    }
   }
 
   bus_t getBusRequirement(arloPeripheral peripheral) { //-1: bus not used, OUTPUT, INPUT
@@ -243,6 +280,20 @@ namespace Goldstone {
       setError(BUS_INPUT_OUTPUT_SET);
     }
     return busState;
+  }
+
+  kill_t getKillState(bool trySetKillPeripherial) { 
+    if (!getPeripheral(KILL))
+      return NOT_SENSING;
+
+    if (trySetKillPeripherial) {
+      if (getBusRequirements(latchBits | KILL) == BUS_ERROR)
+        return NOT_SENSING;
+      else
+        addPeripherals(KILL);
+    }
+
+    return digitalRead(busPin) ? TOUCH : NO_TOUCH;
   }
 
   //============================== REGISTERS & BITS ==============================
