@@ -55,17 +55,19 @@ class Motion {
             case ROBOTIC: //linear interpolation
                 return lerp(time / speedTime, startAngle, endAngle); 
             
-            case NATURAL: //smooth step, x^2 (3 - 2x)
+            case NATURAL: {  //smooth step, x^2 (3 - 2x)
                 float x = time / speedTime;
-                float smoothStepValue = x * x * (3 - 2 * x);
+                float smoothStepValue = x * x * (3.0f - 2.0f * x);
                 return lerp(smoothStepValue, startAngle, endAngle);
+            }
 
-            case BOUNCE: //bounce with damped harmonic oscillator 1 - exp(-ζωt) * cos(ωt * sqrt(1 - ζ^2))
+            case BOUNCE: {  //bounce with damped harmonic oscillator 1 - exp(-ζωt) * cos(ωt * sqrt(1 - ζ^2))
                 const float zeta = 0.75f; //damp strength
                 const float omega = 7.0f; //speed
                 float x = time / speedTime;
                 float dampedHarmonicValue = 1.0f - (float)exp(-zeta * omega * x) * cos(omega * x * sqrt(1.0f - zeta * zeta));
                 return lerp(dampedHarmonicValue, startAngle, endAngle);
+            }
 
             case SET_SPEED: //constant speed
                 return speedTime * speedMultiplier * time + startAngle;
