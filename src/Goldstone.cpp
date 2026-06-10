@@ -101,8 +101,12 @@ namespace Goldstone {
 
     //working startup sequence
     calibrateKill();
-    runDiagnostic(CAPACITIVE_SENSOR);
+    runDiagnostic(BUZZER);
+    runDiagnostic(LED);
+    runDiagnostic(LASER);
+    delay(8000);
     return;
+
     //temporary startup
     delay(100);
     setPeripherals(BODY);
@@ -230,10 +234,11 @@ namespace Goldstone {
         break;
 
       case CAPACITIVE_SENSOR: {
-        setPeripherals(KILL | LITE | LASER);
+        setPeripherals(KILL | LITE /*| LASER*/); //AHHHHHHH ADD LASER BACK
         const unsigned long timeoutSeconds = 8;
         unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
         bool diagnosticResult = false;
+        delay(10);
 
         while (millis() < timeoutTimestamp) { //wait for sensor touch
           if (getKillState() == TOUCH) {
@@ -264,13 +269,39 @@ namespace Goldstone {
       }
 
       case LED:
-                
+        setPeripherals(LITE);           
+        delay(200);
+        setPeripherals(0);
+        for (int i = 0; i < 2; i++) {
+          delay(50);
+          setPeripherals(LITE);
+          delay(50);
+          setPeripherals(0);
+        }
         break;
       
       case LASER:
+        setPeripherals(LASR);           
+        delay(200);
+        setPeripherals(0);
+        for (int i = 0; i < 2; i++) {
+          delay(50);
+          setPeripherals(LASR);
+          delay(50);
+          setPeripherals(0);
+        }
         break;
       
       case BUZZER:
+        setPeripherals(BUZZ);           
+        delay(200);
+        setPeripherals(0);
+        for (int i = 0; i < 2; i++) {
+          delay(50);
+          setPeripherals(BUZZ);
+          delay(50);
+          setPeripherals(0);
+        }
         break;
 
       case ARM_L:
