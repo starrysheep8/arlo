@@ -14,6 +14,8 @@ namespace cmb {
   const float deg2rad = 0.01745329252;
   const float rad2deg = 57.2957795131;
 
+  int getMode(int intArray[], int size);
+  bool arrayContains(int element, int array[], int size);
 }
 
 namespace Constelation {
