@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+
 //0: GND, 00: 5V, 000: 3V3
 namespace cmb {
   typedef struct Vector2 {
@@ -42,7 +43,7 @@ namespace Kepler { //2
   level_t getLightLevel();
 }
 
-namespace Goldstone {
+namespace Arlo {
   void proto(uint8_t pinTX_plus, uint8_t pinTX_minus, uint8_t pwmRX_plus, uint8_t pwmRX_minus, uint8_t pwmSBU);
   void orbit();
   //void step(int stepCount);

@@ -1,6 +1,13 @@
 #include "Novae.h"
 
 namespace cmb {
+  bool arrayContains(int element, int array[], int size) {
+    for (int i = 0; i < size; i++) {
+        if (array[i] == element) return true;
+    }
+    return false;
+  }
+
   int getMode(int intArray[], int size) {
     //get list of unique elements in intArray
     int uniqueElementsFound = 0;
@@ -36,13 +43,6 @@ namespace cmb {
     }
     
     return uniqueElements[biggestIndex];
-  }
-
-  bool arrayContains(int element, int array[], int size) {
-    for (int i = 0; i < size; i++) {
-        if (array[i] == element) return true;
-    }
-    return false;
   }
 
 }
