@@ -166,7 +166,7 @@ namespace Goldstone {
   }
 
   void orbit() {
-    
+    runDiagnostic(CAPACITIVE_SENSOR);
   }
 
   //============================== PERSONALITY MANAGEMENT ==============================
@@ -224,7 +224,6 @@ namespace Goldstone {
 
   void runDiagnostic(diagnostic_t diagnosis) {
     setPeripherals(0);
-    delay(1);
 
     switch (diagnosis) {
       case TRIG_ECHO:
@@ -235,7 +234,6 @@ namespace Goldstone {
         const unsigned long timeoutSeconds = 8;
         unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
         bool diagnosticResult = false;
-        delay(500);
 
         while (millis() < timeoutTimestamp) { //wait for sensor touch
           if (getKillState() == TOUCH) {

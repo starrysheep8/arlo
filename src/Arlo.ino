@@ -50,7 +50,10 @@ void loop() {
 //    delay(100);
 //    return;
 
-  GoldstoneOld::readInputs();
+  //GoldstoneOld::readInputs();
+
+  Goldstone::orbit();
+
   //GoldstoneOld::readInputs();
   //Serial.println(digitalRead(A2));
   //delay(1);
