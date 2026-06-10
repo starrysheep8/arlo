@@ -61,7 +61,8 @@ namespace Goldstone {
   bus_t getBusRequirements(byte peripheralBits);
 
   //motor skills
-    
+  Motion headMotion(headServo, 0.0f, 1.0f, Motion::ROBOTIC);
+  
 
   //personality management
 

@@ -1,35 +1,21 @@
+#include "Motion.h"
 #include <Arduino.h>
-#include <Servo.h>
 
 //All in degrees
-class Motion {
-    public:
-    typedef enum motionMode {ROBOTIC, NATURAL, BOUNCE, SET_SPEED} motion_t;
  
-    Motion(Servo servo, float angle, float speedTime, motion_t mode) {
-        servoReference = servo;
+    Motion::Motion(Servo& servo, float angle, float speedTime, motion_t mode)
+        : servoReference(servo) {
         set(angle, speedTime, mode);
     }
 
-    Motion(Servo servo, float angle, float speedTime, motion_t mode, float timeTo90Deg) {
-        servoReference = servo;
+    Motion::Motion(Servo& servo, float angle, float speedTime, motion_t mode, float timeTo90Deg)
+        : servoReference(servo) {
         const float measuredSpeedConstant = 0.1f; //AHHHHHHHH ACTUALLY MEASURE THIS SPEED CONSTANT, YOU JUST GUESSED THIS NUMBER
         speedMultiplier = measuredSpeedConstant/timeTo90Deg;
         set(angle, speedTime, mode);
     } 
 
-    private:
-    Servo servoReference;
-    float startAngle;
-    float endAngle;
-    float lastUpdatedAngle;
-    float speedTime; //speed in degrees per second, used only when mode is SET_SPEED;
-    float speedMultiplier = 1.0f;
-    unsigned long startTime;
-    motion_t mode;
-    bool done;
-
-    float getTimeSinceStart() {
+    float Motion::getTimeSinceStart() {
         unsigned long currentTime = micros();
         float timeSinceStart = 0.0f;
         if (currentTime >= startTime) {
@@ -43,11 +29,11 @@ class Motion {
         return timeSinceStart /= 1000000.0f; //convert from microseconds to seconds 
     }
 
-    float lerp(float t, float min, float max) {
+    float Motion::lerp(float t, float min, float max) {
         return t * (max - min) + min;
     }
  
-    float getCurrentAngle() {
+    float Motion::getCurrentAngle() {
         float time = getTimeSinceStart();
         if (mode != SET_SPEED && time >= speedTime) return endAngle;
 
@@ -75,8 +61,7 @@ class Motion {
         }
     }
  
-    public:
-    void set(float angle, float speedTime, motion_t mode) {
+    void Motion::set(float angle, float speedTime, motion_t mode) {
         startTime = micros();
         startAngle = done ? servoReference.read() : lastUpdatedAngle; 
         endAngle = angle;
@@ -84,7 +69,7 @@ class Motion {
         done = false;
     }
 
-    float update() {
+    float Motion::update() {
         float angle = getCurrentAngle();
         servoReference.write(angle);
         lastUpdatedAngle = angle;
@@ -92,8 +77,7 @@ class Motion {
         return angle;
     }
 
-    bool finished() {
+    bool Motion::finished() {
         return done;
     } 
     
-};
