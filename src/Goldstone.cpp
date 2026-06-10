@@ -32,6 +32,10 @@ namespace Goldstone {
   typedef enum killState {NOT_SENSING, NO_TOUCH, TOUCH} kill_t;
   typedef enum busState {NO_BUS = -1, BUS_INPUT = 0, BUS_OUTPUT = 1, BUS_ERROR = -2} bus_t;
 
+  int killNoTouchBaseline;
+  int killTouchBaseline;
+  int killHighSubtractor = 1000; //randomly analogReading kill will output a regularvalue plus 1000 exactly, this accounts for that when it occurs
+
   //registers & bits
   void setLsb(bool state);
   void setMsb(bool state);
@@ -46,8 +50,10 @@ namespace Goldstone {
   void addPeripherals(byte bits);
   void removePeripherals(byte bits);
   void setError(arloError errorCode);
-  void runDiagnostic(periph_t peripheral);
-  kill_t getKillState(bool trySetKillPeripherial = false);
+  void runDiagnostic(diagnostic_t diagnosis);
+  kill_t getKillState();
+  kill_t getKillStateRaw(bool trySetKillPeripherial = false);
+  void calibrateKill();
   
   bus_t getCurrentBusState();
   bus_t getBusRequirement(periph_t peripheral);
@@ -93,6 +99,10 @@ namespace Goldstone {
     headServo.write(90);
     shoulderServo.write(0);
 
+    //working startup sequence
+    calibrateKill();
+    runDiagnostic(CAPACITIVE_SENSOR);
+    return;
     //temporary startup
     delay(100);
     setPeripherals(BODY);
@@ -147,7 +157,7 @@ namespace Goldstone {
       } else if (i < 150) {
         busServo.write((float)(i - 100) / 50.0f * -20 + 105);
         shoulderServo.write((float)(i - 100) / 50.0f * 10 + 170);
-      }else {
+      } else {
         busServo.write((float)(i - 150) / 50.0f * 20 + 105);
         shoulderServo.write((float)(i - 150) / 50.0f * -10 + 180);
       }
@@ -220,11 +230,12 @@ namespace Goldstone {
       case TRIG_ECHO:
         break;
 
-      case CAPACITIVE_SENSOR:
+      case CAPACITIVE_SENSOR: {
         setPeripherals(KILL | LITE | LASER);
         const unsigned long timeoutSeconds = 8;
         unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
         bool diagnosticResult = false;
+        delay(500);
 
         while (millis() < timeoutTimestamp) { //wait for sensor touch
           if (getKillState() == TOUCH) {
@@ -235,6 +246,7 @@ namespace Goldstone {
             while (millis() < timeoutTimestamp) { //wait for sensor touch to stop
               if (getKillState() == NO_TOUCH) {
                 diagnosticResult = true;
+                timeoutTimestamp = 0;
               }
             }
           }
@@ -249,8 +261,10 @@ namespace Goldstone {
           delay(50);
           setError(POSITIVE);
         }
+        setPeripherals(0);
         break;
-      
+      }
+
       case LED:
                 
         break;
@@ -305,7 +319,18 @@ namespace Goldstone {
     return busState;
   }
 
-  kill_t getKillState(bool trySetKillPeripherial) { 
+  kill_t getKillState() {
+    int doubleTries = 1; //averages data from (2 * doubleTries + 1) sensor reads
+    int total = 0;
+
+    if (getKillStateRaw(true) == TOUCH) total++;
+    for (int i = 0; i < doubleTries; i++) {
+      if (getKillStateRaw() == TOUCH) total++;
+    }
+    return total >= doubleTries + 1 ? TOUCH : NO_TOUCH;
+  }
+
+  kill_t getKillStateRaw(bool trySetKillPeripherial) { 
     if (!getPeripheral(KILL))
       return NOT_SENSING;
 
@@ -316,7 +341,24 @@ namespace Goldstone {
         addPeripherals(KILL);
     }
 
-    return digitalRead(busPin) ? TOUCH : NO_TOUCH;
+    
+    int sensorValue = analogRead(busPin);
+    if (sensorValue > killHighSubtractor) sensorValue -= killHighSubtractor;
+    return sensorValue > killTouchBaseline ? TOUCH : NO_TOUCH;
+  }
+
+  void calibrateKill() {
+    setPeripherals(KILL);
+    int sampleCount = 10;
+    int samples[sampleCount];
+    for (int i = 0; i < sampleCount; i++) {
+      delay(5);
+      samples[i] = analogRead(busPin);
+    }
+
+    int mode = getMode(samples, sampleCount);
+    killNoTouchBaseline = mode;
+    killTouchBaseline = mode + 9;
   }
 
   //============================== REGISTERS & BITS ==============================
