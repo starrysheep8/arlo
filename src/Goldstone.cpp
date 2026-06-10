@@ -1,4 +1,5 @@
 #include "Novae.h"
+#include "Motion.h"
 
 #define TIME2METER 0.00017f
 #define METER2TIME 5882.352941f
@@ -60,7 +61,7 @@ namespace Goldstone {
   bus_t getBusRequirements(byte peripheralBits);
 
   //motor skills
-  
+    
 
   //personality management
 
@@ -101,9 +102,9 @@ namespace Goldstone {
 
     //working startup sequence
     calibrateKill();
-    runDiagnostic(BUZZER);
     runDiagnostic(LED);
     runDiagnostic(LASER);
+    runDiagnostic(BUZZER);
     delay(8000);
     return;
 
@@ -177,6 +178,9 @@ namespace Goldstone {
 
   //============================== MOTOR SKILLS ==============================
   // when switching between arm and body movement, there needs to be a small delay or else the servo set first gets confused
+  void motionHandler() {
+
+  }
 
   //============================== UTILITIES & ACTIONS ==============================
   bool getPeripheral(periph_t peripheral) {
@@ -234,7 +238,7 @@ namespace Goldstone {
         break;
 
       case CAPACITIVE_SENSOR: {
-        setPeripherals(KILL | LITE /*| LASER*/); //AHHHHHHH ADD LASER BACK
+        setPeripherals(KILL | LITE | LASER);
         const unsigned long timeoutSeconds = 8;
         unsigned long timeoutTimestamp = millis() + 1000 * timeoutSeconds;
         bool diagnosticResult = false;
