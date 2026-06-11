@@ -2,13 +2,12 @@
 #include <Arduino.h>
 
 //All in degrees
- 
-    Motion::Motion(Servo& servo, float angle, float speedTime, motion_t mode)
+    Motion::Motion(Servo& servo, int angle, float speedTime, motion_t mode)
         : servoReference(servo) {
         set(angle, speedTime, mode);
     }
 
-    Motion::Motion(Servo& servo, float angle, float speedTime, motion_t mode, float timeTo90Deg)
+    Motion::Motion(Servo& servo, int angle, float speedTime, motion_t mode, float timeTo90Deg)
         : servoReference(servo) {
         const float measuredSpeedConstant = 0.1f; //AHHHHHHHH ACTUALLY MEASURE THIS SPEED CONSTANT, YOU JUST GUESSED THIS NUMBER
         speedMultiplier = measuredSpeedConstant/timeTo90Deg;
@@ -33,7 +32,7 @@
         return t * (max - min) + min;
     }
  
-    float Motion::getCurrentAngle() {
+    int Motion::getCurrentAngle() {
         float time = getTimeSinceStart();
         if (mode != SET_SPEED && time >= speedTime) return endAngle;
 
@@ -62,7 +61,7 @@
         }
     }
  
-    void Motion::set(float angle, float speedTime, motion_t mode) {
+    void Motion::set(int angle, float speedTime, motion_t mode) {
         startTime = micros();
         startAngle = done ? servoReference.read() : lastUpdatedAngle; 
         endAngle = angle;
@@ -71,8 +70,8 @@
         done = false;
     }
 
-    float Motion::update() {
-        float angle = getCurrentAngle();
+    int Motion::update() {
+        int angle = getCurrentAngle();
         servoReference.write(angle);
         lastUpdatedAngle = angle;
         if (angle == endAngle) done = true;
