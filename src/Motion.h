@@ -12,6 +12,7 @@ class Motion {
     void set(float angle, float speedTime, motion_t mode);
     float update();
     bool finished();
+    int getServoAngle();
     
     private:
     Servo& servoReference;

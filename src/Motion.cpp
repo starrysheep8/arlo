@@ -80,4 +80,8 @@
     bool Motion::finished() {
         return done;
     } 
+
+    int Motion::getServoAngle() {
+        return servoReference.read();
+    }
     
