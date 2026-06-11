@@ -119,7 +119,7 @@ namespace Arlo {
 
     void servoDiag(Motion servoMotion) {
         //initialize the angle
-        const float testTime = 1.0f;
+        const float testTime = 0.5f;
         const int intermittentMillis = 450;
         int initialAngle = servoMotion.getServoAngle();
         servoMotion.set(0, testTime, Motion::ROBOTIC);
@@ -134,21 +134,28 @@ namespace Arlo {
         removePeripherals(BUZZ | LITE);
         delay(intermittentMillis);
 
-        servoMotion.set(0, testTime, Motion::NATURAL);        
+        servoMotion.set(0, testTime, Motion::EASE_OUT);        
         while(servoMotion.finished() == false) {servoMotion.update();}
         addPeripherals(BUZZ | LITE);
         delay(70);
         removePeripherals(BUZZ | LITE);
         delay(intermittentMillis);
 
-        servoMotion.set(150, testTime, Motion::BOUNCE);        
+        servoMotion.set(180, testTime, Motion::NATURAL);        
         while(servoMotion.finished() == false) {servoMotion.update();}
         addPeripherals(BUZZ | LITE);
         delay(70);
         removePeripherals(BUZZ | LITE);
         delay(intermittentMillis);
 
-        servoMotion.set(0, 180.0f, Motion::SET_SPEED);        
+        servoMotion.set(30, testTime, Motion::BOUNCE);        
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(70);
+        removePeripherals(BUZZ | LITE);
+        delay(intermittentMillis);
+
+        servoMotion.set(180, 180.0f, Motion::SET_SPEED);        
         while(servoMotion.finished() == false) {servoMotion.update();}
         addPeripherals(BUZZ | LITE);
         delay(70);

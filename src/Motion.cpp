@@ -43,6 +43,13 @@
             case ROBOTIC: //linear interpolation
                 return lerp(time / speedTime, startAngle, endAngle) + 0.5f; 
             
+            case EASE_OUT: { //ease out quad, 1 - (1 - t)^2
+                float x = time / speedTime;
+                float squareFactor = 1.0f - x;
+                float easeOutValue = 1.0f - squareFactor * squareFactor;
+                return lerp(easeOutValue, startAngle, endAngle);
+            }
+
             case NATURAL: {  //smooth step, x^2 (3 - 2x)
                 float x = time / speedTime;
                 float smoothStepValue = x * x * (3.0f - 2.0f * x);

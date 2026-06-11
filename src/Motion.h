@@ -4,7 +4,7 @@
 //All in degrees
 class Motion {
     public:
-    typedef enum motionMode {ROBOTIC, NATURAL, BOUNCE, SET_SPEED} motion_t; //AHHHHHHH ADD AN EASE_OUT MODE
+    typedef enum motionMode {ROBOTIC, EASE_OUT, NATURAL, BOUNCE, SET_SPEED} motion_t;
  
     Motion(Servo& servo, int angle, float speedTime, motion_t mode);
     Motion(Servo& servo, int angle, float speedTime, motion_t mode, float timeTo90Deg);
