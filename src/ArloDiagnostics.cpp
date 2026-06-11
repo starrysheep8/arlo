@@ -4,12 +4,14 @@ namespace Arlo {
 
     void capacitiveDiag();
     void ledLaserBuzzerDiag(periph_t liteLasrBuzz);
+    void servoDiag(Motion servoMotion);
 
     void setError(arloError errorCode) {
 
     }
 
     void runDiagnostic(diagnostic_t diagnosis) {
+        byte initialPeripherals = latchBits;
         setPeripherals(0);
 
         switch (diagnosis) {
@@ -33,12 +35,34 @@ namespace Arlo {
             ledLaserBuzzerDiag(BUZZ);
             break;
 
-          case ARM_L:
+          case SERVO_ARM_L: {
+            int initialArmUpperAngle = armUpperMotion.getServoAngle();
+            armUpperMotion.set(90, 0.5f, Motion::ROBOTIC);
+            while (!armUpperMotion.finished()) {armUpperMotion.update();}
+            setPeripherals(ARM_L);
+            servoDiag(armLowerMotion);
+            while(armLowerMotion.finished() == false) {armLowerMotion.update();}
+            armUpperMotion.set(0, 0.5f, Motion::ROBOTIC);
+            while(armUpperMotion.finished() == false) {armUpperMotion.update();}
+            break;
+          }
 
-          case BODY:
-        
+          case SERVO_BODY:
+            setPeripherals(BODY);
+            servoDiag(bodyMotion);
+            while(bodyMotion.finished() == false) {bodyMotion.update();}
+            break;
+            
+          case SERVO_ARM_U:
+            servoDiag(armUpperMotion);
+            break;
+
+          case SERVO_HEAD:
+            servoDiag(headMotion);
             break;
         }
+
+        setPeripherals(initialPeripherals);
     }    
 
     void capacitiveDiag() {
@@ -93,5 +117,50 @@ namespace Arlo {
         }
     }
 
+    void servoDiag(Motion servoMotion) {
+        //initialize the angle
+        const float testTime = 1.0f;
+        const int intermittentMillis = 450;
+        int initialAngle = servoMotion.getServoAngle();
+        servoMotion.set(0, testTime, Motion::ROBOTIC);
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        delay(intermittentMillis + 70); 
+
+        
+        servoMotion.set(180, testTime, Motion::ROBOTIC);        
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(70);
+        removePeripherals(BUZZ | LITE);
+        delay(intermittentMillis);
+
+        servoMotion.set(0, testTime, Motion::NATURAL);        
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(70);
+        removePeripherals(BUZZ | LITE);
+        delay(intermittentMillis);
+
+        servoMotion.set(150, testTime, Motion::BOUNCE);        
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(70);
+        removePeripherals(BUZZ | LITE);
+        delay(intermittentMillis);
+
+        servoMotion.set(0, 180.0f, Motion::SET_SPEED);        
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(70);
+        removePeripherals(BUZZ | LITE);
+        delay(intermittentMillis);
+
+        //set angle back to how it started
+        servoMotion.set(initialAngle, 0.5f, Motion::ROBOTIC);
+        while(servoMotion.finished() == false) {servoMotion.update();}
+        addPeripherals(BUZZ | LITE);
+        delay(300);
+        removePeripherals(BUZZ | LITE);
+    }
 
 }
