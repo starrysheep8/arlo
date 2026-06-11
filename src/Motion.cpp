@@ -2,6 +2,9 @@
 #include <Arduino.h>
 
 //All in degrees
+    bool lastAngleGreater = false;
+    float lastDampedHarmonicValue = 0.0f;
+
     Motion::Motion(Servo& servo, int angle, float speedTime, motion_t mode)
         : servoReference(servo) {
         set(angle, speedTime, mode);
@@ -38,25 +41,28 @@
 
         switch (mode) {
             case ROBOTIC: //linear interpolation
-                return lerp(time / speedTime, startAngle, endAngle); 
+                return lerp(time / speedTime, startAngle, endAngle) + 0.5f; 
             
             case NATURAL: {  //smooth step, x^2 (3 - 2x)
                 float x = time / speedTime;
                 float smoothStepValue = x * x * (3.0f - 2.0f * x);
-                return lerp(smoothStepValue, startAngle, endAngle);
+                return lerp(smoothStepValue, startAngle, endAngle) + 0.5f;
             }
 
             case BOUNCE: {  //bounce with damped harmonic oscillator 1 - exp(-ζωt) * cos(ωt * sqrt(1 - ζ^2))
-                const float zeta = 0.75f; //damp strength
-                const float omega = 7.0f; //speed
+                const float zeta = 0.56f; //damp strength
+                const float omega = 6.0f; //speed
                 float x = time / speedTime;
                 float dampedHarmonicValue = 1.0f - (float)exp(-zeta * omega * x) * cos(omega * x * sqrt(1.0f - zeta * zeta));
-                return lerp(dampedHarmonicValue, startAngle, endAngle);
+                
+                if (dampedHarmonicValue < lastDampedHarmonicValue) lastAngleGreater = true;
+                lastDampedHarmonicValue = dampedHarmonicValue;
+                return lerp(dampedHarmonicValue, startAngle, endAngle) + 0.5f;
             }
 
             case SET_SPEED: //constant speed
                 int inversionFactor = endAngle > startAngle ? 1 : -1;
-                return speedTime * speedMultiplier * time * inversionFactor + startAngle;
+                return speedTime * speedMultiplier * time * inversionFactor + startAngle + 0.5f;
                 
         }
     }
@@ -67,14 +73,22 @@
         endAngle = angle;
         this->speedTime = speedTime;
         this->mode = mode;
+        lastDampedHarmonicValue = 0.0f;
+        lastAngleGreater = false;
         done = false;
     }
 
     int Motion::update() {
         int angle = getCurrentAngle();
         servoReference.write(angle);
+        if (angle == endAngle) {
+            if (mode != BOUNCE) {
+                done = true;
+            } else if (lastAngleGreater) {
+                done = true;
+            }
+        }
         lastUpdatedAngle = angle;
-        if (angle == endAngle) done = true;
         return angle;
     }
 
