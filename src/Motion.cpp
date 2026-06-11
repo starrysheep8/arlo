@@ -56,7 +56,8 @@
             }
 
             case SET_SPEED: //constant speed
-                return speedTime * speedMultiplier * time + startAngle;
+                int inversionFactor = endAngle > startAngle ? 1 : -1;
+                return speedTime * speedMultiplier * time * inversionFactor + startAngle;
                 
         }
     }
@@ -65,6 +66,7 @@
         startTime = micros();
         startAngle = done ? servoReference.read() : lastUpdatedAngle; 
         endAngle = angle;
+        this->speedTime = speedTime;
         this->mode = mode;
         done = false;
     }
