@@ -5,6 +5,7 @@ namespace Arlo {
     void capacitiveDiag();
     void ledLaserBuzzerDiag(periph_t liteLasrBuzz);
     void servoDiag(Motion servoMotion);
+    void calibrateDiag(Servo& servo);
 
     void setError(arloError errorCode) {
 
@@ -37,7 +38,7 @@ namespace Arlo {
 
           case SERVO_ARM_L: {
             int initialArmUpperAngle = armUpperMotion.getServoAngle();
-            armUpperMotion.set(90, 0.5f, Motion::ROBOTIC);
+            armUpperMotion.set(Angles::auLevel, 0.5f, Motion::ROBOTIC);
             while (!armUpperMotion.finished()) {armUpperMotion.update();}
             setPeripherals(ARM_L);
             servoDiag(armLowerMotion);
@@ -60,6 +61,37 @@ namespace Arlo {
           case SERVO_HEAD:
             servoDiag(headMotion);
             break;
+
+          case SERVO_ALL:
+            runDiagnostic(SERVO_HEAD);
+            runDiagnostic(SERVO_ARM_U);
+            runDiagnostic(SERVO_ARM_L);
+            runDiagnostic(SERVO_BODY);
+          
+          case CALIBRATE_ARM_L: {
+            int initialArmUpperAngle = armUpperMotion.getServoAngle();
+            armUpperMotion.set(Angles::auLevel, 0.5f, Motion::ROBOTIC);
+            while (!armUpperMotion.finished()) {armUpperMotion.update();}
+            setPeripherals(ARM_L);
+            calibrateDiag(busServo);
+            armUpperMotion.set(initialArmUpperAngle, 0.5f, Motion::ROBOTIC);
+            while (armUpperMotion.finished() == false) {armUpperMotion.update();}
+            break;
+          }
+
+          case CALIBRATE_BODY:
+            setPeripherals(BODY);
+            calibrateDiag(busServo);
+            break;
+
+          case CALIBRATE_ARM_U:
+            calibrateDiag(armUpperServo);
+            break;
+
+          case CALIBRATE_HEAD:
+            calibrateDiag(headServo);
+            break;
+
         }
 
         setPeripherals(initialPeripherals);
@@ -126,7 +158,7 @@ namespace Arlo {
         while(servoMotion.finished() == false) {servoMotion.update();}
         delay(intermittentMillis + 70); 
 
-        
+        //test all Motion modes
         servoMotion.set(180, testTime, Motion::ROBOTIC);        
         while(servoMotion.finished() == false) {servoMotion.update();}
         addPeripherals(BUZZ | LITE);
@@ -170,4 +202,18 @@ namespace Arlo {
         removePeripherals(BUZZ | LITE);
     }
 
+    void calibrateDiag(Servo& servo) {
+        int initialAngle = servo.read();
+        servo.write(10);
+        delay(400);
+        for (int i = 0; i < 3; i++) {
+          setPeripherals(LITE | BUZZ);
+          delay(250);
+          setPeripherals(0);
+          delay(250);
+        }
+        servo.write(100);
+        delay(250);
+        servo.write(initialAngle);
+    }
 }

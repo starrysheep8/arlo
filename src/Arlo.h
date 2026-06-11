@@ -28,13 +28,14 @@ namespace Arlo {
     void motionHandler();
 
     namespace Angles {
+        const int auLevel = 96;
         const int alStraight = 95;
     }
 
     //============================== UTILS ==============================
     //Diagnostics
     typedef enum arloError {NEGATIVE, POSITIVE, BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET, BAD_PERIPHERAL} error_t;
-    typedef enum arloDiagnostic {SERVO_ARM_L = 1, TRIG_ECHO = 2, CAPACITIVE_SENSOR = 4, SERVO_BODY = 8, LED = 16, LASER = 32, BUZZER = 64, SERVO_ARM_U, SERVO_HEAD, SERVO_ALL, CALIBRATE_ARM_L, CALIBRATE_ARM_U, CALIBRATE_BODY, CALIBRATE_HEAD, CALIBRATE_ALL} diagnostic_t;
+    typedef enum arloDiagnostic {SERVO_ARM_L = 1, TRIG_ECHO = 2, CAPACITIVE_SENSOR = 4, SERVO_BODY = 8, LED = 16, LASER = 32, BUZZER = 64, SERVO_ARM_U, SERVO_HEAD, SERVO_ALL, CALIBRATE_ARM_L, CALIBRATE_ARM_U, CALIBRATE_BODY, CALIBRATE_HEAD} diagnostic_t;
 
     void setError(arloError errorCode);
     void runDiagnostic(diagnostic_t diagnosis);
