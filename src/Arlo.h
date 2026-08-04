@@ -45,7 +45,7 @@ namespace Arlo {
     extern int killTouchBaseline;
     extern int killHighSubtractor;
 
-    typedef enum arloPeripheral {ARM_L = 1, ECHO = 2, KILL = 4, BODY = 8, LITE = 16, LASR = 32, BUZZ = 64, TRIG = 128} periph_t; //AHHHHH MOVE THIS TO ARLO.H
+    typedef enum arloPeripheral {ARM_L = 1, ECHO = 2, KILL = 4, BODY = 8, LITE = 16, LASR = 32, BUZZ = 64, TRIG = 128} periph_t;
     typedef enum busState {NO_BUS = -1, BUS_INPUT = 0, BUS_OUTPUT = 1, BUS_ERROR = -2} bus_t;
     typedef enum killState {NOT_SENSING, NO_TOUCH, TOUCH} kill_t;
 
