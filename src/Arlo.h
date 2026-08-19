@@ -10,31 +10,25 @@
 #define BUS_INPUTS KILL | ECHO
 
 namespace Arlo {
-    void proto(uint8_t pinTX_plus, uint8_t pinTX_minus, uint8_t pwmRX_plus, uint8_t pwmRX_minus, uint8_t pwmSBU);
-    void orbit();
+    //============================== DRIVERS ==============================
+    extern uint8_t demulLsbPin;
+    extern uint8_t demulMsbPin;
+    extern uint8_t armUpperPin;
+    extern uint8_t headPin;
+    extern uint8_t busPin;
 
-    //============================== QUIRKS ==============================
-    //Positioning
-        float establishSpace(); //overwrites and initializes the space
-        float getSpaceIntegrity(); //how much of the space is filled out
-         
+    extern bool demulLsb;
+    extern bool demulMsb;
+    extern byte registerBits;
+    extern byte latchBits;
 
-    //============================== MOTORS ==============================
-    extern Servo headServo;
-    extern Servo armUpperServo;
-    extern Servo busServo;
+    void setLsb(bool state);
+    void setMsb(bool state);
+    void flipLsb();
+    void flipMsb();
 
-    extern Motion headMotion;
-    extern Motion armUpperMotion;
-    extern Motion armLowerMotion;
-    extern Motion bodyMotion;
-
-    void motionHandler();
-
-    namespace Angles {
-        const int auLevel = 99;
-        const int alStraight = 95;
-    }
+    void shiftIn(byte bits);
+    void clearRegister(bool latch = true);
 
     //============================== UTILS ==============================
     //Math
@@ -73,24 +67,36 @@ namespace Arlo {
     bool arrayContains(int element, int array[], int size);
     int getMode(int intArray[], int size);
 
-    //============================== DRIVERS ==============================
-    extern uint8_t demulLsbPin;
-    extern uint8_t demulMsbPin;
-    extern uint8_t armUpperPin;
-    extern uint8_t headPin;
-    extern uint8_t busPin;
+    //============================== MOTORS ==============================
+    extern Servo headServo;
+    extern Servo armUpperServo;
+    extern Servo busServo;
 
-    extern bool demulLsb;
-    extern bool demulMsb;
-    extern byte registerBits;
-    extern byte latchBits;
+    extern Motion headMotion;
+    extern Motion armUpperMotion;
+    extern Motion armLowerMotion;
+    extern Motion bodyMotion;
 
-    void setLsb(bool state);
-    void setMsb(bool state);
-    void flipLsb();
-    void flipMsb();
+    void motionHandler();
 
-    void shiftIn(byte bits);
-    void clearRegister(bool latch = true);
+    namespace Angles {
+        const int auLevel = 99;
+        const int alStraight = 95;
+    }
+
+    //============================== QUIRKS ==============================
+    //Scanning & Positioning
+        float establishSpace(); //overwrites and initializes the space
+        float getSpaceIntegrity(); //how much of the space is filled out
+        vec2_t getSpaceCenter(); 
+    //
+
+
+
+
+
+    //============================== PROTO ===============================
+    void proto(uint8_t pinTX_plus, uint8_t pinTX_minus, uint8_t pwmRX_plus, uint8_t pwmRX_minus, uint8_t pwmSBU);
+    void orbit();
 
 }
