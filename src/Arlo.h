@@ -14,6 +14,10 @@ namespace Arlo {
     void orbit();
 
     //============================== QUIRKS ==============================
+    //Positioning
+        float establishSpace(); //overwrites and initializes the space
+        float getSpaceIntegrity(); //how much of the space is filled out
+         
 
     //============================== MOTORS ==============================
     extern Servo headServo;
@@ -28,17 +32,22 @@ namespace Arlo {
     void motionHandler();
 
     namespace Angles {
-        const int auLevel = 96;
+        const int auLevel = 99;
         const int alStraight = 95;
     }
 
     //============================== UTILS ==============================
+    //Math
+        typedef struct vector2 {float x, y;} vec2_t;
+        typedef struct vector2I {int x, y;} vec2i_t;
+        typedef struct vector3 {float x, y, z;} vec3_t;
+    //
     //Diagnostics
-    typedef enum arloError {NEGATIVE, POSITIVE, BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET, BAD_PERIPHERAL} error_t;
-    typedef enum arloDiagnostic {SERVO_ARM_L = 1, TRIG_ECHO = 2, CAPACITIVE_SENSOR = 4, SERVO_BODY = 8, LED = 16, LASER = 32, BUZZER = 64, SERVO_ARM_U, SERVO_HEAD, SERVO_ALL, CALIBRATE_ARM_L, CALIBRATE_ARM_U, CALIBRATE_BODY, CALIBRATE_HEAD} diagnostic_t;
+        typedef enum arloError {NEGATIVE, POSITIVE, BUS_OUTPUT_BLOCKED, BUS_INPUT_BLOCKED, BUS_INPUT_OUTPUT_SET, BAD_PERIPHERAL} error_t;
+        typedef enum arloDiagnostic {SERVO_ARM_L = 1, TRIG_ECHO = 2, CAPACITIVE_SENSOR = 4, SERVO_BODY = 8, LED = 16, LASER = 32, BUZZER = 64, SERVO_ARM_U, SERVO_HEAD, SERVO_ALL, CALIBRATE_ARM_L, CALIBRATE_ARM_U, CALIBRATE_BODY, CALIBRATE_HEAD} diagnostic_t;
 
-    void setError(arloError errorCode);
-    void runDiagnostic(diagnostic_t diagnosis);
+        void setError(arloError errorCode);
+        void runDiagnostic(diagnostic_t diagnosis);
     //
 
     extern int killNoTouchBaseline;
