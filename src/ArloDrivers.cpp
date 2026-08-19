@@ -12,6 +12,8 @@ namespace Arlo {
     byte registerBits;
     byte latchBits;
 
+    const int holdMicros = 3;
+
     void setLsb(bool state) {demulLsb = state; digitalWrite(demulLsbPin, !state);}
     void setMsb(bool state) {demulMsb = state; digitalWrite(demulMsbPin, !state);}
     void flipLsb() {demulLsb = !demulLsb; digitalWrite(demulLsbPin, !demulLsb);}
@@ -27,15 +29,20 @@ namespace Arlo {
         else //11
             setLsb(false);
         }
+        delayMicroseconds(holdMicros);
 
         //shift bits in
         for (int i = 7; i >= 0; i--) {
         bool currentBit = (bits >> i) & 1;
         if (currentBit == true) {
-            flipLsb(); flipLsb();
+            flipLsb();
+            delayMicroseconds(holdMicros);
+            flipLsb();
         }
         else {
-            flipMsb(); flipMsb();
+            flipMsb();
+            delayMicroseconds(holdMicros);
+            flipMsb();
         }
         }
         registerBits = bits;
@@ -46,6 +53,7 @@ namespace Arlo {
         shiftIn(0);
         if (latch) {
         flipMsb();
+        delayMicroseconds(holdMicros);
         flipLsb();
         latchBits = registerBits;
         }

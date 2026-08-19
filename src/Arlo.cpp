@@ -40,6 +40,8 @@ namespace Arlo {
     runDiagnostic(LASER);
     runDiagnostic(BUZZER);
 
+    //establishSpace();
+
     runDiagnostic(SERVO_HEAD);
     runDiagnostic(SERVO_ARM_L);
     runDiagnostic(SERVO_ARM_U);
