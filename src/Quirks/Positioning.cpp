@@ -17,38 +17,37 @@ namespace Arlo {
         if (getPeripheral(TRIG) || true) {
             removePeripherals(TRIG | ECHO);
         }
-        Serial.println(getCurrentBusState());
+        //Serial.println(getCurrentBusState());
 
         bool echoWasHigh = false;
         addPeripherals(TRIG);
         delayMicroseconds(25);
-        unsigned long scanStart = micros();
-        removePeripherals(TRIG);
-        addPeripherals(ECHO);
-        // setPeripherals((latchBits ^ TRIG) | ECHO);
-        //Serial.println(latchBits);
+        //unsigned long scanStart = micros();
+        setPeripherals((latchBits ^ TRIG) | ECHO);
 
-        int i = 0;
-        for (unsigned long currentTime = micros(); currentTime - scanStart < timeoutMillis * 1000UL; currentTime = micros()) {
-            bool state = digitalRead(busPin);
-            //Serial.print("A ");
-            //Serial.println(state);
-            if (state == LOW) {
-                if (echoWasHigh) {
-                    unsigned long deltaScanTime = currentTime - scanStart;
-                    if (deltaScanTime <= 5) { //reject short pulses less than like 1cm away
-                        echoWasHigh = false;
-                        continue;
-                    }
-                    return (uint16_t)(deltaScanTime >= MAX_SONAR_MICROS ? MAX_SCAN : deltaScanTime);
-                }
-            } else {
-                if (echoWasHigh == false) scanStart = micros();
-                echoWasHigh = true;
-            }
+//===================== listening for echo ===========================
+      float scannedMeters = 0.0f;
+      unsigned long scanStart = micros();
+      unsigned long signalStart = 0;
+
+      bool lastSignal = LOW;
+      for(;;) {
+        bool signal = digitalRead(busPin);
+        //Serial.println(analogRead(busPin));
+        if (signal == HIGH && lastSignal == LOW) signalStart = micros();
+        if (signal == LOW && lastSignal == HIGH && (micros() - signalStart) > 5) break;
+        if (micros() - scanStart >= 100000) {
+          signalStart = micros();
+          break;
         }
+        lastSignal = signal;
+      }
+      unsigned long signalTime = micros() - signalStart;
+      //Serial.println(signalTime);
+      scannedMeters = TIME2METER * signalTime;
+//======================================== listening for echo =========================== 
         
-        return NO_SCAN;
+        return (uint16_t)(scannedMeters * 100);
     }
 
     int scanTime() {  //returns time [μs]; updates tracked angles & space

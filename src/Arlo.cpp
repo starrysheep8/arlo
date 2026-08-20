@@ -45,7 +45,7 @@ namespace Arlo {
     runDiagnostic(SERVO_HEAD);
     runDiagnostic(SERVO_ARM_L);
     runDiagnostic(SERVO_ARM_U);
-    runDiagnostic(SERVO_BODY);
+    //runDiagnostic(SERVO_BODY);
     delay(8000);
     return;
 
