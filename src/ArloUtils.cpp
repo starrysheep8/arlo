@@ -3,7 +3,7 @@
 namespace Arlo {
     int killNoTouchBaseline;
     int killTouchBaseline;
-    int killHighSubtractor = 1000; //randomly analogReading kill will output a regularvalue plus 1000 exactly, this accounts for that when it occurs
+    int killHighSubtractor = 1000; //randomly analogReading kill will output a regular value plus 1000 exactly, this accounts for that when it occurs
 
 
     bool getPeripheral(periph_t peripheral) {
@@ -49,7 +49,7 @@ namespace Arlo {
 
     void removePeripherals(byte bits) {setPeripherals(~bits & latchBits);}
 
-    bus_t getBusRequirement(arloPeripheral peripheral) { //-1: bus not used, OUTPUT, INPUT
+    bus_t getBusRequirement(arloPeripheral peripheral) {
         bus_t busState = NO_BUS;
         if (peripheral & BUS_OUTPUTS == true)
           busState = BUS_OUTPUT;
@@ -59,7 +59,7 @@ namespace Arlo {
         return busState;
     }
 
-    bus_t getBusRequirements(byte peripheralBits) { //-1: bus not used, OUTPUT, INPUT, -2 error
+    bus_t getBusRequirements(byte peripheralBits) {
       bool isOutput = false;
       bool isInput = false;
       for (int i = 0; i < 8; i++) {

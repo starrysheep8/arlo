@@ -7,7 +7,7 @@ namespace Arlo {
     Servo armUpperServo;
     Servo busServo;
 
-    Motion headMotion(armUpperServo, 90, 0.0f, Motion::ROBOTIC);
+    Motion headMotion(headServo, 90, 0.0f, Motion::ROBOTIC);
     Motion armUpperMotion(armUpperServo, 0, 0.0f, Motion::ROBOTIC);
     Motion armLowerMotion(busServo, alStraight, 0.0f, Motion::ROBOTIC);
     Motion bodyMotion(busServo, 0, 0.0f, Motion::ROBOTIC);

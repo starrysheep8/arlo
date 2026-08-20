@@ -6,8 +6,8 @@
 #define TIME2METER 0.00017f
 #define METER2TIME 5882.352941f
 
-#define BUS_OUTPUTS BODY | ARM_L
-#define BUS_INPUTS KILL | ECHO
+#define BUS_OUTPUTS (BODY | ARM_L)
+#define BUS_INPUTS (KILL | ECHO)
 
 namespace Arlo {
     //============================== DRIVERS ==============================
