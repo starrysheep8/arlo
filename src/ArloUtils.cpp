@@ -125,6 +125,7 @@ namespace Arlo {
         int mode = getMode(samples, sampleCount);
         killNoTouchBaseline = mode;
         killTouchBaseline = mode + 9;
+        removePeripherals(KILL);
     }
   
     bool arrayContains(int element, int array[], int size) {
