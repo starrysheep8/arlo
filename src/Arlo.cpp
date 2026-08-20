@@ -31,7 +31,7 @@ namespace Arlo {
     delay(500);
 
     pinMode(busPin, INPUT);
-    headServo.write(90);
+    // headServo.write(90);
     armUpperServo.write(0);
 
     //working startup sequence
@@ -40,7 +40,7 @@ namespace Arlo {
     runDiagnostic(LASER);
     runDiagnostic(BUZZER);
 
-    //establishSpace();
+    establishSpace();
 
     runDiagnostic(SERVO_HEAD);
     runDiagnostic(SERVO_ARM_L);

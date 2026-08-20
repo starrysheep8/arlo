@@ -7,31 +7,45 @@ namespace Arlo {
     const uint16_t MAX_SONAR_MICROS = 46647;
 
     const int scanTries = 3;
-    const unsigned long timeoutMillis = 60;
+    const unsigned long timeoutMillis = 100;
 
     const int trackedAngleCount = 360;
     uint16_t scanBuffer[trackedAngleCount];
     uint16_t space[trackedAngleCount];
 
     uint16_t scanRaw() {
-        if (getPeripheral(TRIG)) {
+        if (getPeripheral(TRIG) || true) {
             removePeripherals(TRIG | ECHO);
         }
+        Serial.println(getCurrentBusState());
 
         bool echoWasHigh = false;
         addPeripherals(TRIG);
-        delayMicroseconds(10);
+        delayMicroseconds(25);
         unsigned long scanStart = micros();
-        setPeripherals((latchBits ^ TRIG) | ECHO);
-int tries = 0;
+        removePeripherals(TRIG);
+        addPeripherals(ECHO);
+        // setPeripherals((latchBits ^ TRIG) | ECHO);
+        //Serial.println(latchBits);
+
+        int i = 0;
         for (unsigned long currentTime = micros(); currentTime - scanStart < timeoutMillis * 1000UL; currentTime = micros()) {
-            Serial.println(tries++);
-            if (digitalRead(busPin) == LOW) {
+            bool state = digitalRead(busPin);
+            //Serial.print("A ");
+            //Serial.println(state);
+            if (state == LOW) {
                 if (echoWasHigh) {
-                    uint16_t deltaScanTime = currentTime - scanStart;
-                    return deltaScanTime >= MAX_SONAR_MICROS ? MAX_SCAN : deltaScanTime;
+                    unsigned long deltaScanTime = currentTime - scanStart;
+                    if (deltaScanTime <= 5) { //reject short pulses less than like 1cm away
+                        echoWasHigh = false;
+                        continue;
+                    }
+                    return (uint16_t)(deltaScanTime >= MAX_SONAR_MICROS ? MAX_SCAN : deltaScanTime);
                 }
-            } else echoWasHigh = true;
+            } else {
+                if (echoWasHigh == false) scanStart = micros();
+                echoWasHigh = true;
+            }
         }
         
         return NO_SCAN;
@@ -59,10 +73,10 @@ int tries = 0;
             do {
                 headMotion.update();
             } while(headMotion.finished() == false);
-            scanRaw();
-            delay(10);
-            scanRaw();
-            delay(10);
+            //scanRaw();
+            //delay(40);
+            //scanRaw();
+            //delay(40);
             Serial.println(scanRaw());
         }
     }

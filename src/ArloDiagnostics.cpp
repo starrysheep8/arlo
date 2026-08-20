@@ -8,7 +8,9 @@ namespace Arlo {
     void calibrateDiag(Servo& servo);
 
     void setError(arloError errorCode) {
-
+      setPeripherals(0);
+      setPeripherals(BUZZ | LED);
+      delay(1000);
     }
 
     void runDiagnostic(diagnostic_t diagnosis) {
