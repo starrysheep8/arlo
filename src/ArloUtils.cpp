@@ -51,9 +51,9 @@ namespace Arlo {
 
     bus_t getBusRequirement(arloPeripheral peripheral) {
         bus_t busState = NO_BUS;
-        if (peripheral & BUS_OUTPUTS == true)
+        if ((peripheral & BUS_OUTPUTS) == true)
           busState = BUS_OUTPUT;
-        else if (peripheral & BUS_INPUTS == true) 
+        else if ((peripheral & BUS_INPUTS) == true) 
           busState = BUS_INPUT;
         
         return busState;

@@ -35,6 +35,7 @@ namespace Arlo {
     armUpperServo.write(0);
 
     //working startup sequence
+    runDiagnostic(SERVO_BODY);
     calibrateKill();
     runDiagnostic(LED);
     runDiagnostic(LASER);
@@ -45,7 +46,6 @@ namespace Arlo {
     runDiagnostic(SERVO_HEAD);
     runDiagnostic(SERVO_ARM_L);
     runDiagnostic(SERVO_ARM_U);
-    runDiagnostic(SERVO_BODY);
     delay(8000);
     return;
 
