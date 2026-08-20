@@ -14,7 +14,7 @@ namespace Arlo {
         //validate & set bus
         bool setOutputAfterLatch = false;
         bus_t desiredBus = getBusRequirements(bits);
-        if (bits == BODY) Serial.println(desiredBus);
+        
         switch (desiredBus) {
           case BUS_ERROR:
             setError(BUS_INPUT_OUTPUT_SET);
@@ -51,9 +51,9 @@ namespace Arlo {
 
     bus_t getBusRequirement(arloPeripheral peripheral) {
         bus_t busState = NO_BUS;
-        if ((peripheral & BUS_OUTPUTS) == true)
+        if ((peripheral & BUS_OUTPUTS) != 0)
           busState = BUS_OUTPUT;
-        else if ((peripheral & BUS_INPUTS) == true) 
+        else if ((peripheral & BUS_INPUTS) != 0) 
           busState = BUS_INPUT;
         
         return busState;

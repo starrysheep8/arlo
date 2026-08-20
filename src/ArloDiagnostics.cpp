@@ -152,6 +152,7 @@ namespace Arlo {
     }
 
     void servoDiag(Motion servoMotion) {
+      Serial.print("Bus state: "); Serial.println(getCurrentBusState());
         //initialize the angle
         const float testTime = 0.5f;
         const int intermittentMillis = 450;
