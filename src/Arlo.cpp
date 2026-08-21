@@ -112,7 +112,7 @@ namespace Arlo {
   }
 
   void orbit() {
-    runDiagnostic(CAPACITIVE_SENSOR);
+    //runDiagnostic(CAPACITIVE_SENSOR);
   }
 
 }
