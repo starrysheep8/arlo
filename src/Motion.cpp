@@ -103,6 +103,10 @@
         return done;
     } 
 
+    void Motion::updateUntilFinished() {
+        while (!finished()) {update();}
+    }
+
     int Motion::getServoAngle() {
         return servoReference.read();
     }
