@@ -1,5 +1,5 @@
 #include "../Arlo.h"
-
+//AHHHHHHHH HE GETS SUSPICIOUS A BIT EASILY WHEN THINGS ARE AT FAR DISTANCES
 namespace Arlo {
     const uint16_t NO_SCAN = -1;
     const uint16_t MAX_SCAN = -2;
@@ -10,9 +10,9 @@ namespace Arlo {
     const float SUSPICION_VARIATION = 0.05f; // suspicious if range is greater than SUSPICION_VARIATION * average
 
     const int scanTries = 3;
-    const unsigned long timeoutMillis = 100;
+    const unsigned long timeoutMillis = 60;
 
-    const int trackedAngleCount = 360;
+    const int trackedAngleCount = 180;
     uint16_t scanBuffer[trackedAngleCount];
     uint16_t space[trackedAngleCount];
 
@@ -22,7 +22,9 @@ namespace Arlo {
         for (int i = 0; i < scanTries; i++) {
             scanArray[i] = scanRaw();
             if (i + 1 < scanTries) {
-                delay(timeoutMillis - scanArray[i] / 1000UL); //wait for previous trig signal to be gone from the room before sending another
+                unsigned long delayTime = timeoutMillis - scanArray[i] / 1000UL;
+                if (delayTime > timeoutMillis) delayTime = 0; //set to 0 if delayTime was negative & overflowed
+                delay(delayTime); //wait for previous trig signal to be gone from the room before sending another
             }
         }
     }
@@ -34,7 +36,7 @@ namespace Arlo {
 
         bool echoWasHigh = false;
         addPeripherals(TRIG);
-        delayMicroseconds(10);
+        delayMicroseconds(25);
         unsigned long scanStart = micros();
         setPeripherals((latchBits ^ TRIG) | ECHO);
         
@@ -97,26 +99,29 @@ namespace Arlo {
         uint16_t** suspiciousScans = new uint16_t*[trackedAngleCount];
 
         for (int theta = 0; theta < trackedAngleCount; theta++) { //initial pass
-            headMotion.set((float)theta + 0.5f / 360.0f, 0.02f, Motion::ROBOTIC); //AHHHHHHH update this to account for body rotation
+            float angle = (float)theta / trackedAngleCount * 360.0f;
+            headMotion.set(angle, 0.01f, Motion::ROBOTIC); //AHHHHHHH update this to account for body rotation
             headMotion.updateUntilFinished();
 
             //gather initial scans
             for (int i = 0; i < trackedAngleCount; i++) {suspiciousScans[i] = nullptr;}
             populateScanArray(currentScans);
-
+            
             //determine if initial scans are confident or suspicious
             uint16_t average = getScanAverage(currentScans);
             uint16_t range = getScanRange(currentScans);
-            if (average * SUSPICION_VARIATION > range) { //scan was suspicious; save it for later
+            if (range > average * SUSPICION_VARIATION) { //scan was suspicious; save it for later
                 uint16_t* scanCopy = new uint16_t[scanTries];
                 for (int i = 0; i < scanTries; i++) {scanCopy[i] = currentScans[i];} 
                 suspiciousScans[theta] = scanCopy;
                 space[theta] = NO_SCAN;
+                Serial.print("SUS | avg: "); Serial.print(average); Serial.print(", rng: "); Serial.println(range);
             } else { //scan is confident, save only its average as a baseline
                 space[theta] = average;
-            }
-            scanBuffer[theta = average];
+                Serial.print("REG | avg: "); Serial.print(average); Serial.print(", rng: "); Serial.println(range);
 
+            }
+            scanBuffer[theta] = average;
         } //end initial pass
 
         headMotion.set(0, 0.5f, Motion::EASE_OUT); //AHHHHHHHH update this to account for body rotation also
@@ -124,19 +129,18 @@ namespace Arlo {
         
         for (int theta = 0; theta < trackedAngleCount; theta++) { //second pass
            if (space[theta] != NO_SCAN) {continue;} //skip confident scans
-
-            uint16_t deltaTheta = theta - headMotion.getServoAngle();
-            headMotion.set((float)theta + 0.5f / 360.0f, 0.02f * deltaTheta, Motion::ROBOTIC); //AHHHHHHH update this to account for body rotation
-            headMotion.updateUntilFinished();
-            
-            populateScanArray(currentScans);
-            
-            uint16_t average = getScanAverage(currentScans);
-            uint16_t range = getScanRange(currentScans);
-            
-            uint16_t firstAverage = getScanAverage(suspiciousScans[theta]);
-            uint16_t firstRange = getScanRange(suspiciousScans[theta]);
-
+           float angle = (float)theta / trackedAngleCount * 360.0f;
+           uint16_t deltaAngle = angle - headMotion.getServoAngle();
+           headMotion.set(angle, 0.01f * deltaAngle, Motion::ROBOTIC); //AHHHHHHH update this to account for body rotation
+           headMotion.updateUntilFinished();
+           
+ 
+           populateScanArray(currentScans);
+           uint16_t average = getScanAverage(currentScans);
+           uint16_t range = getScanRange(currentScans);
+           
+           uint16_t firstAverage = getScanAverage(suspiciousScans[theta]);
+           uint16_t firstRange = getScanRange(suspiciousScans[theta]);
             //if the suspicious angle is acting similarly to how it did the first time, it is no longer suspicious so add it to the space
             if (average > firstAverage + MAX_AVERGAE_VARIATION / 2 ||
                 average < firstAverage - MAX_AVERGAE_VARIATION / 2 ||
